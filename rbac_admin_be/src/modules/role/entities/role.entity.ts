@@ -13,10 +13,5 @@ export class Role {
   @Column({ unique: true })
   name!: string;
   @Column()
-  description!: string;
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
+  description?: string;
 }
