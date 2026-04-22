@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from '../entities/role.entity';
 import CreateRoleDto from '../dto/create-role.dto';
@@ -13,5 +13,8 @@ export class RoleService {
   async createRole(createRoleData: CreateRoleDto): Promise<Role> {
     const newRole = this.roleRepository.create(createRoleData);
     return this.roleRepository.save(newRole);
+  }
+  async findRoleByName(name: string): Promise<Role | null> {
+    return this.roleRepository.findOne({ where: { name: ILike(name) } });
   }
 }

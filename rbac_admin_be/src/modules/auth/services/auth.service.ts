@@ -1,47 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { ILike, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/modules/user/entities/user.entity';
 import RegisterDto from '../dto/register.dto';
-import { hashPassword } from 'src/common/utils/bcrypt.util';
+
 import { ConflictException } from '@nestjs/common';
-import { Role } from 'src/modules/role/entities/role.entity';
-import { UserRole } from 'src/modules/user/entities/user-role.entity';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/modules/user/services/user.service';
+import { UserRoleService } from 'src/modules/user/services/user-role.service';
+import { RoleService } from 'src/modules/role/services/role.service';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
-    @InjectRepository(UserRole)
-    private readonly userRoleRepository: Repository<UserRole>,
+    private readonly userService: UserService,
+    private readonly userRoleService: UserRoleService,
+    private readonly roleService: RoleService,
+    private readonly jwtService: JwtService,
   ) {}
   async register(registerData: RegisterDto) {
-    const { username, email, password } = registerData;
-    const userExist = await this.userRepository.findOne({
-      where: { email: email, deleted: false },
-    });
+    const userExist = await this.userService.validateUser(registerData.email);
     if (userExist) {
       throw new ConflictException('Email đã tồn tại');
     }
-    const hashedPassword = await hashPassword(password);
-    const role = await this.roleRepository.findOne({
-      where: { name: ILike('USER') },
-    });
+    const role = await this.roleService.findRoleByName('User');
     if (!role) {
       throw new NotFoundException('Role USER không tồn tại');
     }
-    const newUser = await this.userRepository.save(
-      this.userRepository.create({
-        username: username,
-        email: email,
-        password: hashedPassword,
-      }),
-    );
-    await this.userRoleRepository.save({
-      user: newUser,
-      role: role,
-    });
+
+    const newUser = await this.userService.createUser(registerData);
+    await this.userRoleService.assignRole(newUser, role);
 
     return newUser;
   }

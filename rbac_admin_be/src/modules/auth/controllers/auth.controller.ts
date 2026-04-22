@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import RegisterDto from '../dto/register.dto';
 import { HttpStatus } from '@nestjs/common';
@@ -7,7 +7,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/register')
-  async register(@Body(new ValidationPipe()) registerData: RegisterDto) {
+  async register(@Body() registerData: RegisterDto) {
     await this.authService.register(registerData);
     return {
       statusCode: HttpStatus.CREATED,

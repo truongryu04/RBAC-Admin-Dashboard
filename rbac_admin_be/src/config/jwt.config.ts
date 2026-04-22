@@ -1,10 +1,10 @@
 export const jwtConfig = {
   accessToken: {
-    secret: process.env.JWT_ACCESS_SECRET || 'access_secret',
-    expiresIn: '1h',
+    secret: process.env.JWT_ACCESS_SECRET,
+    expiresIn: 3600, //1 giờ
   },
   refreshToken: {
-    secret: process.env.JWT_REFRESH_SECRET || 'refresh_secret',
-    expiresIn: '7d',
+    secret: process.env.JWT_REFRESH_SECRET,
+    expiresIn: 604800, //`7 ngày
   },
 };

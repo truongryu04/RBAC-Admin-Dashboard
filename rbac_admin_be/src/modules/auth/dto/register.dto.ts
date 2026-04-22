@@ -1,8 +1,8 @@
-import { IsEmail, IsString, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export default class RegisterDto {
   @IsString()
-  @Length(1, 255, { message: 'Tên người dùng không được để trống' })
+  @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
   username!: string;
 
   @IsString()
@@ -10,5 +10,6 @@ export default class RegisterDto {
   password!: string;
 
   @IsEmail()
+  @IsNotEmpty({ message: 'Email không được để trống ' })
   email!: string;
 }
