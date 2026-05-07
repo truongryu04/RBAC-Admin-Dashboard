@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import RegisterDto from '../dto/register.dto';
 
@@ -9,6 +13,12 @@ import LoginDto from '../dto/login.dto';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+
+interface JwtPayload {
+  sub: number;
+  email?: string;
+  role?: string;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -58,6 +68,53 @@ export class AuthService {
       },
       access_token: this.jwtService.sign(payload),
       refresh_token: refresh_token,
+    };
+  }
+  async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token');
+    }
+    const storedToken = await this.refreshTokenRepository.findOne({
+      where: { token: refreshToken },
+    });
+    if (!storedToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    let payload: JwtPayload;
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const newAccessToken = this.jwtService.sign(
+      {
+        sub: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      },
+      {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: '1h',
+      },
+    );
+
+    return {
+      accessToken: newAccessToken,
+    };
+  }
+  async logout(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token');
+    }
+    await this.refreshTokenRepository.delete({
+      token: refreshToken,
+    });
+    return {
+      message: 'Logout successful',
     };
   }
 }

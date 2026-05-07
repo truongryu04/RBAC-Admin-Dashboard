@@ -30,4 +30,12 @@ export class AuthController {
       data: { user, access_token: access_token, refresh_token: refresh_token },
     };
   }
+  @Post('/refresh')
+  async refreshToken(@Body('refresh_token') refreshToken: string) {
+    return this.authService.refresh(refreshToken);
+  }
+  @Post('logout')
+  async logout(@Body('refreshToken') refreshToken: string) {
+    return this.authService.logout(refreshToken);
+  }
 }
