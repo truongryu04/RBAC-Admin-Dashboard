@@ -7,11 +7,14 @@ import { RoleModule } from '../role/role.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, LocalStrategy],
   imports: [
+    TypeOrmModule.forFeature([RefreshToken]),
     UserModule,
     RoleModule,
     ConfigModule,

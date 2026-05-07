@@ -19,11 +19,15 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('/login')
   async login(@Body() loginData: LoginDto) {
-    const token = await this.authService.login(loginData);
+    const {
+      user,
+      access_token: access_token,
+      refresh_token: refresh_token,
+    } = await this.authService.login(loginData);
     return {
       statusCode: HttpStatus.OK,
       message: 'Đăng nhập thành công',
-      data: { token },
+      data: { user, access_token: access_token, refresh_token: refresh_token },
     };
   }
 }
