@@ -18,6 +18,9 @@ import databaseConfig from './config/database.config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const dbConfig = configService.get('database');
+        if (!dbConfig) {
+          throw new Error('Database config is undefined');
+        }
         return {
           ...dbConfig,
           autoLoadEntities: true,

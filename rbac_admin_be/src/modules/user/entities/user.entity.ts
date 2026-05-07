@@ -1,14 +1,13 @@
-import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  JoinTable,
-  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-import { UserRole } from './user-role.entity';
+import { Role } from 'src/modules/role/entities/role.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -34,6 +33,7 @@ export class User {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @OneToMany(() => UserRole, (ur) => ur.user)
-  userRoles!: UserRole[];
+  @ManyToOne(() => Role, (role) => role.users, { nullable: false, eager: true })
+  @JoinColumn({ name: 'role_id' })
+  role!: Role;
 }

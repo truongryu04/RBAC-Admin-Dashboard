@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import RegisterDto from '../dto/register.dto';
 import { HttpStatus } from '@nestjs/common';
+import LoginDto from '../dto/login.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -12,6 +14,16 @@ export class AuthController {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Đăng ký thành công',
+    };
+  }
+  @UseGuards(AuthGuard('local'))
+  @Post('/login')
+  async login(@Body() loginData: LoginDto) {
+    const token = await this.authService.login(loginData);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Đăng nhập thành công',
+      data: { token },
     };
   }
 }
