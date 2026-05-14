@@ -7,10 +7,10 @@ import { comparePassword, hashPassword } from 'src/common/utils/bcrypt.util';
 import { RoleService } from 'src/modules/role/services/role.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 
-type CreateUserInput = Pick<User, 'username' | 'email' | 'password'> & {
-  roleName?: string;
-  status?: string;
-};
+// type CreateUserInput = Pick<User, 'username' | 'email' | 'password'> & {
+//   roleName?: string;
+//   status?: string;
+// };
 @Injectable()
 export class UserService {
   constructor(
@@ -33,7 +33,7 @@ export class UserService {
 
     const hashedPassword = await hashPassword(user.password);
     user.password = hashedPassword;
-    const { roleName: _roleName, status, ...userData } = user;
+    const { status, ...userData } = user;
     const newUser = this.userRepository.create(userData);
     newUser.role = role;
     newUser.status = status ?? 'PENDING';
@@ -63,5 +63,16 @@ export class UserService {
       return null;
     }
     return user;
+  }
+  async findById(id: number) {
+    return this.userRepository.findOne({
+      where: { id },
+
+      relations: {
+        role: {
+          permissions: true,
+        },
+      },
+    });
   }
 }
