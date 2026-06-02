@@ -16,8 +16,8 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('Admin')
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles('Admin')
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
@@ -41,6 +41,6 @@ export class RoleController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SetRolePermissionsDto,
   ) {
-    return this.roleService.setPermissions(id, dto.codes);
+    return this.roleService.setPermissions(id, dto.permissionCodes);
   }
 }

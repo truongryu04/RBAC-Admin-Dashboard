@@ -13,6 +13,7 @@ import LoginDto from '../dto/login.dto';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RoleService } from 'src/modules/role/services/role.service';
 
 interface JwtPayload {
   sub: number;
@@ -24,6 +25,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly roleService: RoleService,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
@@ -47,18 +49,23 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
-    const payload = { email: user.email, sub: user.id, role: user.role.name };
+    const role = await this.roleService.findRoleByName(user.role.name);
+    const permissions = role?.permissions.map((p) => p.code) ?? [];
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      role: user.role.name,
+      permissions: permissions,
+    };
     const refresh_token = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '7d',
     });
-    console.log('Refresh token:', refresh_token);
     await this.refreshTokenRepository.save({
       user_id: user.id,
       token: refresh_token,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
-
     return {
       user: {
         id: user.id,
@@ -66,6 +73,7 @@ export class AuthService {
         email: user.email,
         role: user.role.name,
       },
+      permissions: permissions,
       access_token: this.jwtService.sign(payload),
       refresh_token: refresh_token,
     };

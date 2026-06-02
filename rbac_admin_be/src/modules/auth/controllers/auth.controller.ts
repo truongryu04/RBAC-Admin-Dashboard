@@ -23,11 +23,17 @@ export class AuthController {
       user,
       access_token: access_token,
       refresh_token: refresh_token,
+      permissions: permissions,
     } = await this.authService.login(loginData);
     return {
       statusCode: HttpStatus.OK,
       message: 'Đăng nhập thành công',
-      data: { user, access_token: access_token, refresh_token: refresh_token },
+      data: {
+        user,
+        permissions: permissions,
+        access_token: access_token,
+        refresh_token: refresh_token,
+      },
     };
   }
   @Post('/refresh')

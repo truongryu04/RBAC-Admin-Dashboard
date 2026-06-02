@@ -12,5 +12,5 @@ export default class SetRolePermissionsDto {
   @ArrayUnique({ message: 'Permission code bị trùng' })
   @IsString({ each: true })
   @Length(1, 255, { each: true })
-  codes!: string[];
+  permissionCodes!: string[];
 }
