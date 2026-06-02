@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
-import { Repository } from 'typeorm';
+import { Like, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { comparePassword, hashPassword } from 'src/common/utils/bcrypt.util';
 import { RoleService } from 'src/modules/role/services/role.service';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { GetUsersDto } from '../dto/get-user.dto';
+import { ResponseUserDto } from '../dto/response-user.dto';
 
 // type CreateUserInput = Pick<User, 'username' | 'email' | 'password'> & {
 //   roleName?: string;
@@ -17,8 +19,17 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly roleService: RoleService,
   ) {}
-  getUser(): Promise<User[]> {
-    return this.userRepository.find();
+
+  private toResponse(user: User): ResponseUserDto {
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      status: user.status,
+      role: user.role.name,
+      createdAt: user.createdAt,
+    };
   }
   async createUser(user: CreateUserDto): Promise<User> {
     if (!user.password?.trim()) {
@@ -74,5 +85,35 @@ export class UserService {
         },
       },
     });
+  }
+  async findAll(query: GetUsersDto) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const where: FindOptionsWhere<User> = {};
+
+    if (query.keyword) {
+      where.username = Like(`%${query.keyword}%`);
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
+    const [users, total] = await this.userRepository.findAndCount({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return {
+      items: users.map((u) => this.toResponse(u)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }

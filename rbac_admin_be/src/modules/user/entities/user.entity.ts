@@ -29,7 +29,10 @@ export class User {
   deleted!: boolean;
   @CreateDateColumn()
   createdAt!: Date;
-
+  @Column({
+    nullable: true,
+  })
+  avatar?: string;
   @UpdateDateColumn()
   updatedAt!: Date;
 
