@@ -14,6 +14,7 @@ import { RefreshToken } from '../entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleService } from 'src/modules/role/services/role.service';
+import { UserStatus } from 'src/modules/user/enums/user-status.enum';
 
 interface JwtPayload {
   sub: number;
@@ -38,7 +39,7 @@ export class AuthService {
     return this.userService.createUser({
       ...registerData,
       roleName: 'User',
-      status: 'PENDING',
+      status: UserStatus.ACTIVE,
     });
   }
   async login(loginData: LoginDto) {

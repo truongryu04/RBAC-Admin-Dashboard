@@ -3,7 +3,7 @@ export class ResponseUserDto {
   username!: string;
 
   email!: string;
-
+  phone?: string;
   role!: string;
   avatar?: string;
   status!: string;

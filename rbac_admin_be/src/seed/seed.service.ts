@@ -1,8 +1,8 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { UserStatus } from './../modules/user/enums/user-status.enum';
+import { Injectable, Logger, OnModuleInit, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RoleService } from 'src/modules/role/services/role.service';
 import { UserService } from 'src/modules/user/services/user.service';
-
 @Injectable()
 export class SeedService implements OnModuleInit {
   private readonly logger = new Logger(SeedService.name);
@@ -45,7 +45,8 @@ export class SeedService implements OnModuleInit {
         email: adminEmail,
         password: adminPassword,
         roleName: 'Admin',
-        status: 'ACTIVE',
+        phone: '0123456789',
+        status: UserStatus.ACTIVE,
       });
       this.logger.log(`Seeded admin user: ${adminEmail}`);
     } else {

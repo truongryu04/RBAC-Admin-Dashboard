@@ -1,11 +1,13 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   Length,
+  Matches,
 } from 'class-validator';
-
+import { UserStatus } from '../enums/user-status.enum';
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty({ message: 'Tên người dùng không được để trống' })
@@ -19,11 +21,17 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Email không được để trống ' })
   email!: string;
 
+  @IsString()
+  @Matches(/^0\d{9}$/, {
+    message: 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0',
+  })
+  phone!: string;
+
   @IsOptional()
   @IsString()
   roleName?: string;
 
   @IsOptional()
-  @IsString()
-  status?: string;
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 }

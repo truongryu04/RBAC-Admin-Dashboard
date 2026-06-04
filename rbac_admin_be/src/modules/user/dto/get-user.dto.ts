@@ -1,4 +1,5 @@
 import { IsNumberString, IsOptional, IsString } from 'class-validator';
+import { UserStatus } from '../enums/user-status.enum';
 
 export class GetUsersDto {
   @IsOptional()
@@ -14,5 +15,5 @@ export class GetUsersDto {
   keyword?: string;
   @IsOptional()
   @IsString()
-  status?: string;
+  status?: UserStatus;
 }

@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Role } from 'src/modules/role/entities/role.entity';
+import { UserStatus } from '../enums/user-status.enum';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -22,8 +23,19 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column({ default: 'ACTIVE' })
-  status!: string;
+  @Column({
+    length: 10,
+    unique: true,
+    nullable: true,
+  })
+  phone?: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
+  })
+  status!: UserStatus;
 
   @Column({ default: false })
   deleted!: boolean;

@@ -1,5 +1,10 @@
-import { Injectable } from '@nestjs/common';
-
+import { UpdateUserDto } from './../dto/update-user.dto';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { Like, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
@@ -8,7 +13,7 @@ import { RoleService } from 'src/modules/role/services/role.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { GetUsersDto } from '../dto/get-user.dto';
 import { ResponseUserDto } from '../dto/response-user.dto';
-
+import { UserStatus } from '../enums/user-status.enum';
 // type CreateUserInput = Pick<User, 'username' | 'email' | 'password'> & {
 //   roleName?: string;
 //   status?: string;
@@ -24,6 +29,7 @@ export class UserService {
     return {
       id: user.id,
       username: user.username,
+      phone: user.phone,
       email: user.email,
       avatar: user.avatar,
       status: user.status,
@@ -32,14 +38,29 @@ export class UserService {
     };
   }
   async createUser(user: CreateUserDto): Promise<User> {
+    const existedEmail = await this.userRepository.findOne({
+      where: { email: user.email },
+    });
+
+    if (existedEmail) {
+      throw new ConflictException('Email đã tồn tại');
+    }
+
+    const existedPhone = await this.userRepository.findOne({
+      where: { phone: user.phone },
+    });
+
+    if (existedPhone) {
+      throw new ConflictException('Số điện thoại đã tồn tại');
+    }
     if (!user.password?.trim()) {
-      throw new Error('Mật khẩu không hợp lệ');
+      throw new BadRequestException('Mật khẩu không hợp lệ');
     }
 
     const roleName = user.roleName ?? 'User';
     const role = await this.roleService.findRoleByName(roleName);
     if (!role) {
-      throw new Error(`Role ${roleName} không tồn tại`);
+      throw new NotFoundException(`Role ${roleName} không tồn tại`);
     }
 
     const hashedPassword = await hashPassword(user.password);
@@ -47,7 +68,7 @@ export class UserService {
     const { status, ...userData } = user;
     const newUser = this.userRepository.create(userData);
     newUser.role = role;
-    newUser.status = status ?? 'PENDING';
+    newUser.status = status ?? UserStatus.ACTIVE;
     return this.userRepository.save(newUser);
   }
 
@@ -115,5 +136,19 @@ export class UserService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+    const existedPhone = await this.userRepository.findOne({
+      where: { phone: updateUserDto.phone },
+    });
+    if (existedPhone) {
+      throw new ConflictException('Số điện thoại đã tồn tại');
+    }
+    const updateUser = { ...user, ...updateUserDto };
+    return await this.userRepository.save(updateUser);
   }
 }
